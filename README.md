@@ -121,28 +121,6 @@ All three examples are configured in `Sources/App/ScreenPetMain.swift`. No UI ch
 - **Basketball:** change `teamID` (ESPN team ID, `"129689"` is the Valkyries; see `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/teams`), `teamDisplayName`, and `timeZoneIdentifier`.
 - **Weather:** change `latitude`, `longitude`, and `placeName`.
 
-## Upload to GitHub
-
-Upload this unzipped folder as the repository—do not make the ZIP itself the repository.
-
-With GitHub Desktop:
-
-1. Select **File → Add Local Repository** and choose this folder.
-2. If asked, create a repository here.
-3. Commit the files.
-4. Select **Publish repository** and choose public or private visibility.
-
-Or with Git:
-
-```bash
-git init -b main
-git add .
-git commit -m "Release ScreenPet v1.0.1"
-git remote add origin YOUR_GITHUB_REPOSITORY_URL
-git push -u origin main
-```
-
-The included `.gitignore` excludes local build products. Create a GitHub Release tagged `v1.0.1` if you want a stable release page. A locally built, ad-hoc-signed `.app` may still trigger macOS security warnings on another person's Mac; public binary distribution normally requires an Apple Developer ID signature and notarization.
 
 ## Privacy and credentials
 
