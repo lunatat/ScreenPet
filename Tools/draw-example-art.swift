@@ -91,12 +91,7 @@ func face(_ ctx: CGContext, _ mood: Mood, cx: CGFloat = 256, cy: CGFloat = 270, 
             t.addQuadCurve(to: CGPoint(x: tx, y: ty), control: CGPoint(x: tx - 12, y: ty + 12))
             ctx.addPath(t); ctx.setFillColor(rgb(120, 190, 255)); ctx.fillPath()
         } else {
-            // Calm, sleepy lids and a small flat smile
-            for s in [-1.0, 1.0] {
-                ctx.move(to: CGPoint(x: cx + s * eyeDX - 20, y: cy - 20))
-                ctx.addLine(to: CGPoint(x: cx + s * eyeDX + 20, y: cy - 20))
-                ctx.strokePath()
-            }
+            // Calm open eyes (no brows) and a small soft smile
             ctx.move(to: CGPoint(x: cx - 16, y: cy + 40))
             ctx.addQuadCurve(to: CGPoint(x: cx + 16, y: cy + 40), control: CGPoint(x: cx, y: cy + 46))
             ctx.strokePath()
@@ -145,15 +140,17 @@ func sun(_ ctx: CGContext) {
     let c = CGPoint(x: 256, y: 250)
     ctx.setFillColor(rgb(0, 0, 0, 0.10)); ctx.fillEllipse(in: CGRect(x: 160, y: 432, width: 192, height: 20))
     feet(ctx, color: rgb(232, 120, 30), y: 420, spread: 52)
-    ctx.setFillColor(rgb(255, 196, 40))
-    for i in 0..<12 {
-        let a = CGFloat(i) / 12 * 2 * .pi
-        let ray = CGMutablePath()
-        ray.move(to: CGPoint(x: c.x + cos(a - 0.13) * 150, y: c.y + sin(a - 0.13) * 150))
-        ray.addLine(to: CGPoint(x: c.x + cos(a) * 225, y: c.y + sin(a) * 225))
-        ray.addLine(to: CGPoint(x: c.x + cos(a + 0.13) * 150, y: c.y + sin(a + 0.13) * 150))
-        ray.closeSubpath()
-        ctx.addPath(ray); ctx.fillPath()
+    // Soft glow behind the sun
+    let glow = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                          colors: [rgb(255, 220, 90, 0.45), rgb(255, 220, 90, 0)] as CFArray, locations: nil)!
+    ctx.drawRadialGradient(glow, startCenter: c, startRadius: 150, endCenter: c, endRadius: 235, options: [])
+    // Rounded, stubby rays; the two bottom slots are left open for the feet
+    ctx.setStrokeColor(rgb(255, 196, 50)); ctx.setLineWidth(30)
+    for i in 0..<8 where i != 1 && i != 2 {
+        let a = (CGFloat(i) + 0.5) / 8 * 2 * .pi
+        ctx.move(to: CGPoint(x: c.x + cos(a) * 186, y: c.y + sin(a) * 186))
+        ctx.addLine(to: CGPoint(x: c.x + cos(a) * 212, y: c.y + sin(a) * 212))
+        ctx.strokePath()
     }
     let disc = CGRect(x: c.x - 160, y: c.y - 160, width: 320, height: 320)
     radial(ctx, clip: CGPath(ellipseIn: disc, transform: nil), center: CGPoint(x: 210, y: 190), radius: 260,
@@ -171,14 +168,26 @@ func fogCloud(_ ctx: CGContext) {
     ctx.drawLinearGradient(g, start: CGPoint(x: 256, y: 120), end: CGPoint(x: 256, y: 410), options: [])
     ctx.restoreGState()
     face(ctx, .neutral, cy: 292, ink: rgb(60, 66, 82))
-    // Drifting fog bands in front of the cloud
-    ctx.setLineWidth(18)
-    for (y, x0, x1, a) in [(352.0, 40.0, 300.0, 0.9), (392.0, 190.0, 476.0, 0.85), (432.0, 80.0, 360.0, 0.8)] as [(CGFloat, CGFloat, CGFloat, CGFloat)] {
-        ctx.setStrokeColor(rgb(200, 207, 220, a))
-        ctx.move(to: CGPoint(x: x0, y: y))
-        ctx.addCurve(to: CGPoint(x: x1, y: y), control1: CGPoint(x: x0 + (x1 - x0) * 0.33, y: y - 14), control2: CGPoint(x: x0 + (x1 - x0) * 0.66, y: y + 14))
-        ctx.strokePath()
+    // Soft mist drifting around the cloud's base
+    for (x, y, rx, ry, a) in [
+        (120.0, 372.0, 120.0, 42.0, 0.85), (300.0, 392.0, 150.0, 44.0, 0.85),
+        (420.0, 362.0, 90.0, 34.0, 0.75), (200.0, 426.0, 150.0, 34.0, 0.8),
+        (360.0, 438.0, 110.0, 28.0, 0.7), (70.0, 420.0, 70.0, 26.0, 0.6)
+    ] as [(CGFloat, CGFloat, CGFloat, CGFloat, CGFloat)] {
+        mist(ctx, center: CGPoint(x: x, y: y), rx: rx, ry: ry, alpha: a)
     }
+}
+
+/// A soft, feathered ellipse of fog that fades to transparent at its edges.
+func mist(_ ctx: CGContext, center: CGPoint, rx: CGFloat, ry: CGFloat, alpha: CGFloat) {
+    let g = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                       colors: [rgb(236, 240, 246, alpha), rgb(226, 231, 239, alpha * 0.6), rgb(220, 226, 235, 0)] as CFArray,
+                       locations: [0, 0.55, 1])!
+    ctx.saveGState()
+    ctx.translateBy(x: center.x, y: center.y)
+    ctx.scaleBy(x: 1, y: ry / rx)
+    ctx.drawRadialGradient(g, startCenter: .zero, startRadius: 0, endCenter: .zero, endRadius: rx, options: [])
+    ctx.restoreGState()
 }
 
 func rainCloud(_ ctx: CGContext) {
