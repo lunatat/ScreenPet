@@ -1,0 +1,13 @@
+extension PetTheme {
+    static let custom = PetTheme(
+        displayName: "My Pet",
+        menuBarSymbol: "🐾",
+        fallbackStateID: "neutral",
+        assetNames: [
+            "positive": "positive",
+            "negative": "negative",
+            "neutral": "neutral"
+        ],
+        windowPositionKey: "MyPetPosition"
+    )
+}

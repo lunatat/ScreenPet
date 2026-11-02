@@ -1,0 +1,17 @@
+import Foundation
+
+/// Rename this type and implement the data-source-specific logic.
+struct CustomStatusProvider: StatusProvider {
+    func fetchStatus(on date: Date) async throws -> PetStatus {
+        // Fetch or calculate the current condition here.
+        let currentValue = 0
+
+        if currentValue > 0 {
+            return PetStatus(stateID: "positive", message: "Positive status")
+        }
+        if currentValue < 0 {
+            return PetStatus(stateID: "negative", message: "Negative status")
+        }
+        return .neutral("Neutral or waiting status")
+    }
+}
